@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: story-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: story
+  template:
+    metadata:
+      labels:
+        app: story
+    spec:
+      containers:
+        - name: story
+          image: mrmaskedman/kub-data-demo:2
+          env:
+            - name: STORY_FOLDER
+              # value: 'story' (Can be included directly, optional)
+              valueFrom:
+                configMapKeyRef:
+                  name: data-store-env
+                  key: folder
+          volumeMounts:
+            - mountPath: /app/story
+              name: story-volume
+      volumes:
+        # - name: story-volume
+        #   emptyDir: {} (Single pod storage, available to all the containers in a pod, not persistent if a pod goes down)
+        # - name: story-volume
+        #   hostPath: # (Single Node Storage, available to all the pods in a node, not persistent if a node goes down)
+            # path: /data
+            # type: DirectoryOrCreate
+          - name: story-volume
+            persistentVolumeClaim:
+              claimName: host-pvc
